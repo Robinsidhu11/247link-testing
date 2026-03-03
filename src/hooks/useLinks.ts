@@ -341,10 +341,13 @@ export const useLinks = () => {
 
   const deleteLink = async (linkId: string) => {
     try {
-      const { error } = await supabase
-        .from('links')
-        .delete()
-        .eq('id', linkId);
+      setLoading(true);
+
+      const { data, error } = await supabase.functions.invoke('delete-link', {
+        body: {
+          ids: [linkId],
+        },
+      });
 
       if (error) throw error;
 
@@ -353,8 +356,8 @@ export const useLinks = () => {
         description: "Link deleted successfully",
       });
 
-      // Refresh links list
       await fetchLinks();
+      return data;
     } catch (error) {
       console.error('Error deleting link:', error);
       toast({
@@ -362,6 +365,9 @@ export const useLinks = () => {
         description: "Failed to delete link",
         variant: "destructive",
       });
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 

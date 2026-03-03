@@ -592,15 +592,11 @@ const LinkShortener = () => {
     }
 
     try {
-      // Delete all related data first
-      await supabase.from('clicks').delete().eq('link_id', link.id);
-      await supabase.from('analytics_daily').delete().eq('link_id', link.id);
-      
-      // Delete the link itself
-      const { error } = await supabase
-        .from('links')
-        .delete()
-        .eq('id', link.id);
+      const { data, error } = await supabase.functions.invoke('delete-link', {
+        body: {
+          ids: [link.id],
+        },
+      });
 
       if (error) throw error;
 
@@ -610,6 +606,7 @@ const LinkShortener = () => {
       });
 
       refreshLinks();
+      return data;
     } catch (error) {
       console.error('Error deleting link:', error);
       toast({
@@ -617,6 +614,7 @@ const LinkShortener = () => {
         description: "Failed to delete link",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
