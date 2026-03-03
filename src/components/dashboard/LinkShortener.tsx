@@ -27,6 +27,28 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
  
 
+const createDefaultSettings = () => ({
+  customDomain: false, // Auto-detect domain from request
+  analytics: true,
+  expiration: false,
+  password: false,
+  customDomainUrl: typeof window !== 'undefined' ? window.location.hostname : "247l.ink",
+  expirationDate: undefined as Date | undefined,
+  passwordValue: "",
+  customAlias: "",
+  description: "",
+  redirectType: "direct",
+  channelId: "",
+  campaignId: "",
+  domainValidation: {
+    isValid: true,
+    isChecking: false,
+    message: typeof window !== 'undefined'
+      ? `Using current domain: ${window.location.hostname}`
+      : "Using auto-detected domain"
+  }
+});
+
 const LinkShortener = () => {
   const navigate = useNavigate();
   const [inputUrl, setInputUrl] = useState("");
@@ -35,25 +57,7 @@ const LinkShortener = () => {
   const [selectedLinks, setSelectedLinks] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
-  const [settings, setSettings] = useState({
-    customDomain: false, // Auto-detect domain from request
-    analytics: true,
-    expiration: false,
-    password: false,
-    customDomainUrl: typeof window !== 'undefined' ? window.location.hostname : "247l.ink",
-    expirationDate: undefined as Date | undefined,
-    passwordValue: "",
-    customAlias: "",
-    description: "",
-    redirectType: "direct",
-    channelId: "",
-    campaignId: "",
-    domainValidation: {
-      isValid: true,
-      isChecking: false,
-      message: typeof window !== 'undefined' ? `Using current domain: ${window.location.hostname}` : "Using auto-detected domain"
-    }
-  });
+  const [settings, setSettings] = useState(createDefaultSettings);
   const [showShortLinkModal, setShowShortLinkModal] = useState(false);
   const [newShortLink, setNewShortLink] = useState<{
     shortUrl: string;
@@ -293,6 +297,7 @@ const LinkShortener = () => {
       
       if (result) {
         setInputUrl("");
+        setSettings(createDefaultSettings());
         // Show the short link modal
         setNewShortLink({
           shortUrl: result.shortUrl,
@@ -757,7 +762,13 @@ const LinkShortener = () => {
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-2 pt-3">
-                    <Button variant="ghost" size="sm" onClick={() => { setSettings({ ...settings, customDomainUrl: "247l.ink", customDomain: true, redirectType: "direct", customAlias: "", channelId: "", passwordValue: "", password: false, description: "", domainValidation: { isValid: true, isChecking: false, message: "Using fixed domain 247l.ink" } }); }}>Reset</Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSettings(createDefaultSettings())}
+                    >
+                      Reset
+                    </Button>
                     <Button size="sm" onClick={() => setIsCustomizeOpen(false)}>Apply</Button>
                   </div>
                 </DialogContent>
